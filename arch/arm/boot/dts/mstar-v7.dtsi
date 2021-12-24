@@ -1,0 +1,1057 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * Copyright (c) 2020 thingy.jp.
+ * Author: Daniel Palmer <daniel@thingy.jp>
+ */
+
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/clock/mstar-msc313-mpll.h>
+#include <dt-bindings/clock/mstar-msc313-pm-muxes.h>
+#include <dt-bindings/clock/mstar-msc313-clkgen.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	interrupt-parent = <&gic>;
+
+	cpus: cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a7";
+			reg = <0x0>;
+			clocks = <&cpupll>;
+			clock-names = "cpuclk";
+		};
+	};
+
+	arch_timer {
+		compatible = "arm,armv7-timer";
+		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(2)
+				| IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(2)
+				| IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(2)
+				| IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(2)
+				| IRQ_TYPE_LEVEL_LOW)>;
+		/*
+		 * we shouldn't need this but the vendor
+		 * u-boot is broken
+		 */
+		clock-frequency = <6000000>;
+		arm,cpu-registers-not-fw-configured;
+	};
+
+	pmu: pmu {
+		compatible = "arm,cortex-a7-pmu";
+		interrupts = <GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>;
+/*		interrupts = <GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 22 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>; */
+		interrupt-affinity = <&cpu0>;
+	};
+
+	clocks: clocks {
+		unknownclk: unknownclk {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <1>;
+		};
+		unknownclk_160: unknownclk_160 {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <160000000>;
+		};
+
+		unknownclk_192: unknownclk_192 {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <192000000>;
+		};
+
+		unknownclk_240: unknownclk_240 {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <240000000>;
+		};
+
+		unknownclk_480: unknownclk_480 {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <480000000>;
+		};
+		/*
+		 * For the msc313e there is only a 24mhz clock input so everything else must come
+		 * from this base clock unless there are some on-die oscillators that aren't mentioned
+		 * anywhere.
+		 */
+		xtal: xtal {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <24000000>;
+		};
+
+		xtal_div2: xtal_div2 {
+			#clock-cells = <0>;
+			compatible = "fixed-factor-clock";
+			clocks = <&xtal>;
+			clock-div = <2>;
+			clock-mult = <1>;
+		};
+		
+		xtal_div2_div2: xtal_div2_div2 {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&xtal_div2>;
+			clock-div = <2>;
+			clock-mult = <1>;
+		};
+
+		xtal_div2_div4: xtal_div2_div4 {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&xtal_div2>;
+			clock-div = <4>;
+			clock-mult = <1>;
+		};
+
+		xtal_div2_div8: xtal_div2_div8 {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&xtal_div2>;
+			clock-div = <8>;
+			clock-mult = <1>;
+		};
+
+		xtal_div2_div12: xtal_div2_div12 {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&xtal_div2>;
+			clock-div = <12>;
+			clock-mult = <1>;
+		};
+
+		xtal_div2_div16: xtal_div2_div16 {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&xtal_div2>;
+			clock-div = <16>;
+			clock-mult = <1>;
+		};
+
+		xtal_div2_div40: xtal_div2_div40 {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&xtal_div2>;
+			clock-div = <40>;
+			clock-mult = <1>;
+		};
+
+		xtal_div2_div64: xtal_div2_div64 {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&xtal_div2>;
+			clock-div = <64>;
+			clock-mult = <1>;
+		};
+
+		xtal_div2_div128: xtal_div2_div128 {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&xtal_div2>;
+			clock-div = <128>;
+			clock-mult = <1>;
+		};
+
+		rtc_xtal: rtc_xtal {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <32768>;
+			status = "disabled";
+		};
+
+		rtc_xtal_div4: rtc_xtal_div4 {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&rtc_xtal>;
+			clock-div = <4>;
+			clock-mult = <1>;
+		};
+
+		eth_buf: eth_buf {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <25000000>;
+		};
+
+		rmii_buf: rmii_buf {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <25000000>;
+		};
+		
+		pad2isp_sr_pclk: pad2isp_sr_pclk {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <1>;
+		};
+	
+		csi2_mac: csi2_mac {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <25000000>;
+		};
+
+		/*
+		 * this is a dummy for now, there must be a switch for the
+		 * cpu clk to move between the mpll and the xtal, the spi nor
+		 * controller also uses this clock and it works before the
+		 * mpll is enabled
+		 */
+		cpuclksrc: cpuclksrc {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&mpll 1>;
+			clock-div = <1>;
+			clock-mult = <1>;
+		};
+	};
+
+	soc: soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0x14000000 0x14000000 0x1000000>,
+			 <0x16001000 0x16001000 0x00007000>,
+			 <0x1f000000 0x1f000000 0x00400000>,
+			 <0xa0000000 0xa0000000 0x20000>;
+
+		isp: isp@1f001000 {
+			compatible = "mstar,msc313-isp";
+			reg = <0x1f001000 0x400>,
+			      <0x1f002c00 0x200>,
+			      <0x1f002e00 0x200>,
+			      <0x14000000 0x1000000>;
+			clock-names = "pm_spi", "cpuclk", "spi";
+			clocks = <&pm_muxes MSC313_PM_MUXES_SPI_PM>,
+				 <&cpuclksrc>,
+				 <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_SPI 0>;
+			interrupts-extended = <&intc_irq GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
+			dmas = <&bdma 0>;
+			dma-names = "qspi";
+			pinctrl-names = "default";
+			pinctrl-0 = <&pm_spi_pins>;
+			status = "disabled";
+			interconnects = <&miu 0>;
+			interconnect-names = "dma-mem";
+		};
+
+		/*
+		temp_sensor {
+			compatible = "iio-hwmon";
+			io-channels = <&sar 4>;
+		};
+		*/
+
+		efuse: efuse@0x1f004000 {
+			compatible = "mstar,msc313-efuse";
+			reg = <0x1f004000 0x8>;
+		};
+
+		ir: ir@1f007a00 {
+		 // maybe
+			interrupts-extended = <&intc_fiq GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>,
+					      <&intc_fiq GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>;
+		};
+
+		gic: interrupt-controller@16001000 {
+			compatible = "arm,cortex-a7-gic";
+			reg = <0x16001000 0x1000>,
+			      <0x16002000 0x2000>,
+			      <0x16004000 0x2000>,
+			      <0x16006000 0x2000>;
+			#interrupt-cells = <3>;
+			interrupt-controller;
+			interrupts = <GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(2)
+					| IRQ_TYPE_LEVEL_LOW)>;
+		};
+
+		riu: bus@1f000000 {
+			compatible = "simple-bus";
+			//compatible = "mstar,riubrdg";
+			reg = <0x1f000000 0x00400000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0x0 0x1f000000 0x00400000>;
+			//clocks = <&clkgen_mux_mcu_riubrdg 1>;
+			interrupts-extended = <&intc_irq GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
+
+			pmsleep: syscon@1c00 {
+				/* msc313e notes
+				 *
+				 * 1f001c24 -- bit 11 disables pm uart rx
+				 * -- bit 15 is set when going into deep sleep
+				 *
+				 *
+				 * 0x1f001cec -- return address after resume
+				 * 0x1f001cf0
+				 * 0x1f001cf4 -- clk for timers?
+				 * 0x1f001cc0 -- ??
+				 * 0x1f001cc8  -- set to 9fe8 before deep sleep
+				 * 0x1f001ccc  -- set to 9fe8 before deep sleep
+				 * 0x1f001cdc  -- set to 0xa5 before deep sleep
+				 */
+				compatible = "mstar,msc313-pmsleep", "syscon", "simple-mfd";
+				reg = <0x1c00 0x100>;
+				use-raw-spinlock;
+
+				pinctrl_pm: pinctrl {
+					pm_uart_pins: pm_uart {
+						function = "pm_uart";
+						groups = "pm_uart";
+					};
+					pm_spi_pins: pm_spi {
+						function = "pm_spi";
+						groups = "pm_spi";
+					};
+					pm_irin_pins: pm_irin {
+						function = "pm_irin";
+						groups = "pm_irin";
+					};
+				};
+
+				pmintc: interrupt-controller@1c10 {
+					compatible = "mstar,msc313-pm-intc";
+					interrupt-parent = <&intc_irq>;
+					interrupts = <GIC_SPI 2 IRQ_TYPE_LEVEL_HIGH>;
+					interrupt-controller;
+					#interrupt-cells = <1>;
+				};
+
+				wakeintc: interrupt-controller@1c20 {
+					compatible = "mstar,msc313-pm-wakeup-intc";
+					interrupt-parent = <&intc_irq>;
+					interrupts = <GIC_SPI 2 IRQ_TYPE_LEVEL_HIGH>;
+					interrupt-controller;
+					#interrupt-cells = <2>;
+					mstar,pmsleep = <&pmsleep>;
+				};
+
+				pm_muxes: pm_muxes@0 {
+					compatible = "mstar,msc313-pm-muxes";
+					#clock-cells = <1>;
+					clock-names =	"rtc_xtal",
+							"rtc_xtal_div4",
+							"xtal_div2",
+							"xtal_div2_div8",
+							"xtal_div2_div12",
+							"xtal_div2_div16",
+							"mpll_div_4";
+					clocks = <&rtc_xtal>, 
+						 <&rtc_xtal_div4>,
+						 <&xtal_div2>,
+						 <&xtal_div2_div8>,
+						 <&xtal_div2_div12>,
+						 <&xtal_div2_div16>,
+						 <&mpll 3>;
+				};
+
+				reboot {
+					compatible = "syscon-reboot";
+					offset = <0xb8>;
+					mask = <0x79>;
+				};
+			};
+
+			gpio_pm: gpio_pm@1e00 {
+				reg = <0x1e00 0x200>;
+				#gpio-cells = <2>;
+				gpio-controller;
+				interrupt-controller;
+				#interrupt-cells = <3>;
+				interrupt-parent = <&pmintc>;
+				status = "disabled";
+			};
+
+			mcu: mcu@2000 {
+				compatible = "mstar,msc313-pm51";
+				reg = <0x2000 0x200>;
+				mstar,pmsleep = <&pmsleep>;
+				//clocks = <&clkgen_mux_spi_mcu_pm 0>;
+				dma-names = "bdma0", "bdma1";
+				dmas = <&bdma 0>, <&bdma 1>;
+				interconnects = <&miu 0>;
+				interconnect-names = "dma-mem";
+				interrupts-extended = <&intc_fiq GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
+			};
+
+			rtc@2400 {
+				compatible = "mstar,msc313-rtc";
+				reg = <0x2400 0x40>;
+				clocks = <&pm_muxes MSC313_PM_MUXES_RTC>;
+				interrupts-extended = <&intc_irq GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>,
+						      <&wakeintc 4 IRQ_TYPE_LEVEL_HIGH>;
+				wakeup-source;
+			};
+
+			sar: sar@2800 {
+				reg = <0x2800 0x200>;
+				interrupts-extended = <&intc_irq GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>,
+						      <&wakeintc 1 IRQ_TYPE_LEVEL_HIGH>,
+						      <&wakeintc 6 IRQ_TYPE_LEVEL_HIGH>,
+						      <&intc_fiq GIC_SPI 24 IRQ_TYPE_LEVEL_HIGH>,
+						      <&intc_fiq GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>,
+						      <&intc_fiq GIC_SPI 26 IRQ_TYPE_LEVEL_HIGH>,
+						      <&intc_fiq GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
+				interrupt-names = "sar",
+						  "wakeup",
+						  "wakeup_gpio",
+						  "sar_gpio0",
+						  "sar_gpio1",
+						  "sar_gpio2",
+						  "sar_gpio3";
+				clock-names = "sar_clk";
+				clocks = <&pm_muxes MSC313_PM_MUXES_SAR>;
+				#gpio-cells = <2>;
+				mstar,pmsleep = <&pmsleep>;
+				wakeup-source;
+				status = "disabled";
+				sar0_gpio0_pins: sar0_gpio0 {
+					function = "sar0";
+					groups = "sar_gpio0";
+				};
+				sar1_gpio1_pins: sar1_gpio1 {
+					function = "sar1";
+					groups = "sar_gpio1";
+				};
+				sar2_gpio2_pins: sar2_gpio2 {
+					function = "sar2";
+					groups = "sar_gpio2";
+				};
+				sar3_gpio3_pins: sar3_gpio3 {
+					function = "sar3";
+					groups = "sar_gpio3";
+				};
+			};
+
+			watchdog@6000 {
+				compatible = "mstar,msc313e-wdt";
+				reg = <0x6000 0x1f>;
+				clocks = <&xtal_div2>;
+				interrupts-extended = <&intc_fiq GIC_SPI 2 IRQ_TYPE_LEVEL_HIGH>;
+			};
+
+			timer0: timer@6040 {
+				compatible = "mstar,msc313e-timer";
+				reg = <0x6040 0x40>;
+				clocks = <&xtal_div2>;
+				interrupts-extended = <&intc_fiq GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>;
+			};
+
+			timer1: timer@6080 {
+				compatible = "mstar,msc313e-timer";
+				reg = <0x6080 0x40>;
+				clocks = <&xtal_div2>;
+				interrupts-extended = <&intc_fiq GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
+			};
+	
+			timer2: timer@60c0 {
+				compatible = "mstar,msc313e-timer";
+				reg = <0x60c0 0x40>;
+				clocks = <&xtal_div2>;
+				interrupts-extended = <&intc_fiq GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>;
+			};
+			
+			clkgen: clkgen@207000 {
+				compatible = "mstar,msc313-clkgen";
+				reg = <0x207000 0x200>;
+				#clock-cells = <3>;
+				clock-names = "deglitch",
+					      "xtal_div2",
+					      "xtal_div2_div40",
+					      "gate0",
+					      "gate1",
+					      "gate2",
+					      "gate3",
+					      "gate4",
+					      "gate5",
+					      "gate6",
+					      "gate7",
+					      "gate8",
+					      "gate9",
+					      "gate10",
+					      "gate11",
+					      "gate12",
+					      "gate13",
+					      "gate14",
+					      "gate15",
+					      "miupll";
+
+				clocks = <&xtal_div2>,
+					 <&xtal_div2>,
+					 <&xtal_div2_div40>,
+					 /* gates */
+					 <&upll 0>,
+					 <&upll 1>,
+					 <&unknownclk_160>,
+					 <&unknownclk_192>,
+					 <&unknownclk_240>,
+					 <&unknownclk_480>,
+					 <&mpll MSTAR_MSC313_MPLL_DIV2>,
+					 <&unknownclk>,
+					 <&mpll MSTAR_MSC313_MPLL_DIV3>,
+					 <&mpll MSTAR_MSC313_MPLL_DIV4>,
+					 <&mpll MSTAR_MSC313_MPLL_DIV5>,
+					 <&mpll MSTAR_MSC313_MPLL_DIV6>,
+					 <&mpll MSTAR_MSC313_MPLL_DIV7>,
+					 <&unknownclk>,
+					 <&mpll MSTAR_MSC313_MPLL_DIV10>,
+					 <&unknownclk>,
+					 <&miupll>;
+			};
+
+			intc_fiq: interrupt-controller@201310 {
+				compatible = "mstar,mst-intc";
+				reg = <0x201310 0x40>;
+				#interrupt-cells = <3>;
+				interrupt-controller;
+				interrupt-parent = <&gic>;
+				mstar,irqs-map-range = <96 127>;
+			};
+
+			intc_irq: interrupt-controller@201350 {
+				compatible = "mstar,mst-intc";
+				reg = <0x201350 0x40>;
+				#interrupt-cells = <3>;
+				interrupt-controller;
+				interrupt-parent = <&gic>;
+				mstar,irqs-map-range = <32 95>;
+				mstar,intc-no-eoi;
+			};
+
+			pinctrl: pinctrl@203c00 {
+				reg = <0x203c00 0x200>;
+				emac_mode1_pins: eth {
+					function = "eth";
+					groups = "eth_mode1";
+				};
+				eth1_mode4_pins: eth1_mode4 {
+					function = "eth1";
+					groups = "eth1_mode4";
+				};
+				fuart_pins: fuart {
+					function = "fuart";
+					groups = "fuart";
+				};
+				fuart_mode1_pins: fuart_mode1 {
+					function = "fuart";
+					groups = "fuart_mode1";
+				};
+				fuart_mode2_pins: fuart_mode2 {
+					function = "fuart";
+					groups = "fuart_mode2";
+				};
+				fuart_mode3_pins: fuart_mode3 {
+					function = "fuart";
+					groups = "fuart_mode3";
+				};
+				fuart_mode4_pins: fuart_mode4 {
+					function = "fuart";
+					groups = "fuart_mode4";
+				};
+				fuart_mode5_pins: fuart_mode5 {
+					function = "fuart";
+					groups = "fuart_mode5";
+				};
+				fuart_mode6_pins: fuart_mode6 {
+					function = "fuart";
+					groups = "fuart_mode6";
+				};
+				fuart_mode7_pins: fuart_mode7 {
+					function = "fuart";
+					groups = "fuart_mode7";
+				};
+				fuart_rx_tx_rts_pins: fuart_rx_tx_rts {
+					function = "fuart";
+					groups = "fuart_rx_tx_rts";
+				};
+				uart1_mode1_pins: uart1_mode1 {
+					function = "uart1";
+					groups = "uart1_mode1";
+				};
+				uart1_pins: uart1 {
+					function = "uart1";
+					groups = "fuart_cts_rts";
+				};
+				uart1_cts_pins: uart1_cts {
+					function = "uart1";
+					groups = "fuart_cts";
+				};
+				i2c0_pins: i2c0 {
+					function = "i2c0";
+					groups = "i2c0";
+				};
+				i2c0_mode4_pins: i2c0_mode4 {
+					function = "i2c0";
+					groups = "i2c0_mode4";
+				};
+				i2c1_pins: i2c1 {
+					function = "i2c1";
+					groups = "i2c1";
+				};
+				i2c1_mode1_pins: i2c1_mode1 {
+					function = "i2c1";
+					groups = "i2c1_mode1";
+				};
+				i2c1_mode3_pins: i2c1_mode3 {
+					function = "i2c1";
+					groups = "i2c1_mode3";
+				};
+				i2c1_mode4_pins: i2c1_mode4 {
+					function = "i2c1";
+					groups = "i2c1_mode4";
+				};
+				i2c1_mode5_pins: i2c1_mode5 {
+					function = "i2c1";
+					groups = "i2c1_mode5";
+				};
+				spi0_spi0_pins: spi0_spi0 {
+					function = "spi0";
+					groups = "spi0";
+				};
+				spi0_fuart_pins: spi0_fuart {
+					function = "spi0";
+					groups = "fuart";
+				};
+				spi1_sd_d0_d1_d2_d3_pins: spi1_sd_d0_d1_d2_d3 {
+					function = "spi1";
+					groups = "sd_d0_d1_d2_d3";
+				};
+				sdio_pins: sdio {
+					function = "sdio";
+					groups = "sdio_mode1";
+					bias-pull-up;
+				};
+				sdio_mode1_4ma_pins: sdio_mode1_4ma_pins {
+					function = "sdio";
+					groups = "sdio_mode1";
+					bias-pull-up;
+					drive-strength = <4>;
+				};
+				sdio_mode1_8ma_pins: sdio_mode1_8ma_pins {
+					function = "sdio";
+					groups = "sdio_mode1";
+					bias-pull-up;
+					drive-strength = <8>;
+				};
+				usb_pins: usb {
+					function = "usb";
+					groups = "usb";
+				};
+				usb1_pins: usb1 {
+					function = "usb1";
+					groups = "usb1";
+				};
+				pwm0_mode1_pins: pwm0_mode1 {
+					function = "pwm0";
+					groups = "pwm0_mode1";
+				};
+				pwm0_mode2_pins: pwm0_mode2 {
+					function = "pwm0";
+					groups = "pwm0_mode2";
+				};
+				pwm0_mode3_pins: pwm0_mode3 {
+					function = "pwm0";
+					groups = "pwm0_mode3";
+				};
+				pwm0_mode4_pins: pwm0_mode4 {
+					function = "pwm0";
+					groups = "pwm0_mode4";
+				};
+				pwm1_mode4_pins: pwm1_mode4 {
+					function = "pwm1";
+					groups = "pwm1_mode4";
+				};
+				pwm1_fuart_tx_pins: pwm1_fuart_tx {
+					function = "pwm1";
+					groups = "fuart_tx";
+				};
+				pwm2_fuart_cts_pins: pwm2_fuart_cts {
+					function = "pwm2";
+					groups = "fuart_cts";
+				};
+				pwm3_fuart_rts_pins: pwm3_fuart_rts {
+					function = "pwm3";
+					groups = "fuart_rts";
+				};
+				pwm4_spi0_cz_pins: pwm4_spi0_cz {
+					function = "pwm4";
+					groups = "spi0_cz";
+				};
+				pwm5_spi0_ck_pins: pwm5_spi0_ck {
+					function = "pwm5";
+					groups = "spi0_ck";
+				};
+				pwm6_spi0_di_pins: pwm6_spi_di {
+					function = "pwm6";
+					groups = "spi0_di";
+				};
+				pwm7_spi0_do_pins: pwm7_spi_do {
+					function = "pwm7";
+					groups = "spi0_do";
+				};
+			};
+
+			bdma: bdma@200400 {
+				compatible = "mstar,msc313-bdma";
+				reg = <0x200400 0x80>;
+				interrupt-parent = <&intc_irq>;
+				interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>,
+					     <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_BDMA 0>;
+				dma-channels = <2>;
+				status = "okay";
+				#dma-cells = <1>;
+			};
+
+			mailbox: mailbox@200800 {
+				reg = <0x200800 0x200>;
+				/*
+				 * 0x0 - boot rom writes 0xbabe here right near the start.
+				 * 0x4 - something to do with "SRAM and MCM gates".
+				 * 0x8 - boot rom writes values into here during startup.
+				 *       seems to be for debugging?
+				 * 0x20 - 24 - vendor kernel writes the log buf addr here. Debugging?
+				 */
+			};
+			miu: miu@202000 {
+				compatible = "mstar,msc313-miu";
+				reg = <0x202000	0x200>,
+				      <0x202400 0x200>,
+				      <0x202200 0x200>;
+				interrupt-parent = <&intc_irq>;
+				interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
+				clock-names = "miu", "ddr";
+				clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_MIU 0>,
+					 <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_DDR_SYN 0>;
+				/*mstar,rd-timing = <0xB>;*/
+				mstar,trcd = <0x6>;
+				mstar,trp = <0x6>;
+				#clock-cells = <0>;
+				clock-output-names = "ddrpll";
+				/* Comments suggest the miu size is 256MB */
+				dma-ranges = <0x00000000 0x20000000 0x10000000>;
+				#interconnect-cells = <1>;
+			};
+
+			l3bridge: l3bridge@204400 {
+				compatible = "mstar,l3bridge", "syscon";
+				reg = <0x204400 0x200>;
+				status = "disabled";
+			};
+
+			mpll: mpll@206000 {
+				compatible = "mstar,msc313-mpll";
+				#clock-cells = <1>;
+				reg = <0x206000 0x200>;
+				clocks = <&xtal>;
+			};
+
+			miupll: miupll@206200 {
+				compatible = "mstar,miupll";
+				reg = <0x206200 0x200>;
+				#clock-cells = <0>;
+				clocks = <&xtal>;
+			};
+
+			cpupll: cpupll@206400 {
+				compatible = "mstar,msc313-cpupll";
+				reg = <0x206400 0x200>;
+				#clock-cells = <0>;
+				clocks = <&cpuclksrc>;
+			};
+
+			lpll: lpll@206700 {
+				compatible = "mstar,msc313-lpll";
+				reg = <0x206700 0x100>;
+				#clock-cells = <1>;
+				clocks = <&mpll MSTAR_MSC313_MPLL_DIV2>;
+			};
+
+			gpio: gpio@207800 {
+				#gpio-cells = <2>;
+				reg = <0x207800 0x200>;
+				gpio-controller;
+				#interrupt-cells = <2>;
+				interrupt-controller;
+				interrupt-parent = <&intc_fiq>;
+				status = "disabled";
+			};
+
+			fuart: uart@220400 {
+				compatible = "mstar,msc313-uart";
+				reg = <0x220400 0x100>;
+				interrupt-parent = <&intc_irq>;
+				interrupts = <GIC_SPI 47 IRQ_TYPE_LEVEL_HIGH>;
+				reg-shift = <3>;
+				clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_FUART 0>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&fuart_pins>;
+				status = "disabled";
+			};
+
+			urdma: urdma@220600 {
+				compatible = "mstar,msc313-urdma";
+				reg = <0x220600 0x100>;
+				interrupts-extended = <&intc_irq GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&miu 0>;
+			};
+
+			pm_uart: uart@221000 {
+				compatible = "mstar,msc313-uart";
+				reg = <0x221000 0x100>;
+				reg-shift = <3>;
+				interrupts-extended = <&intc_irq GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_UART0 0>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&pm_uart_pins>;
+				status = "disabled";
+			};
+
+			uart1: uart@221200 {
+				compatible = "mstar,msc313-uart";
+				reg = <0x221200 0x100>;
+				interrupts-extended = <&intc_irq GIC_SPI 35 IRQ_TYPE_LEVEL_HIGH>;
+				reg-shift = <3>;
+				clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_UART1 0>;
+				status = "disabled";
+			};
+
+			mspi0: mspi@222100 {
+				compatible = "mstar,msc313-spi";
+				reg = <0x222100 0x100>;
+				interrupt-parent = <&intc_irq>;
+				interrupts = <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_MSPI0 0>;
+				status = "disabled";
+			};
+
+			mspi1: mspi@222300 {
+				compatible = "mstar,msc313-spi";
+				reg = <0x222300 0x100>;
+				interrupt-parent = <&intc_irq>;
+				interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_MSPI1 0>;
+				status = "disabled";
+			};
+
+			i2c0: i2c0@223000 {
+				compatible = "mstar,msc313e-i2c";
+				reg = <0x223000 0x200>;
+				interrupt-parent = <&intc_irq>;
+				interrupts = <GIC_SPI 36 IRQ_TYPE_LEVEL_HIGH>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_MIIC0 0>;
+				clock-names = "i2c_clk";
+				pinctrl-names = "default";
+				pinctrl-0 = <&i2c0_pins>;
+				status = "disabled";
+			};
+
+			i2c1: i2c1@223200 {
+				compatible = "mstar,msc313e-i2c";
+				reg = <0x223200 0x200>;
+				interrupt-parent = <&intc_irq>;
+				interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_MIIC1 0>;
+				clock-names = "i2c_clk";
+				pinctrl-names = "default";
+				pinctrl-0 = <&i2c1_pins>;
+				status = "disabled";
+			};
+
+			rng: rng@224400 {
+				compatible = "mstar,msc313-rng";
+				reg = <0x224400 0x10>;
+				clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_MIU 0>;
+			};
+
+			sha@224420 {
+				reg = <0x224420 0x60>;
+				compatible = "mstar,msc313-sha";
+				clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_AESDMA 0>;
+				interconnects = <&miu 0>;
+				interconnect-names = "dma-mem";
+			};
+
+			rsa@224480 {
+				reg = <0x224480 0xc0>;
+				compatible = "mstar,msc313-rsa";
+				clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_AESDMA 0>;
+				interconnects = <&miu 0>;
+				interconnect-names = "dma-mem";
+			};
+
+			aesdma: aesdma@224540 {
+				reg = <0x224540 0xc0>;
+				compatible = "mstar,msc313-aesdma";
+				/* We might not have an interrupt for AESDMA */
+				/*interrupts-extended = <&intc_irq GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;*/
+				clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_AESDMA 0>;
+				interconnects = <&miu 0>;
+				interconnect-names = "dma-mem";
+			};
+
+			sc_gp_ctrl: syscon@226600 {
+				compatible = "syscon", "simple-mfd";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x226600 0x200>;
+
+				sc_gp_ctrl_muxes: sc_gp_ctrl_muxes@0 {
+					#clock-cells = <1>;
+				};
+			};
+
+			upll: upll@284000 {
+				#clock-cells = <1>;
+				compatible = "mstar,msc313-upll";
+				reg = <0x284000 0x20>;
+				clock-output-names = "upll_384", "upll_320";
+				clock-rates = <384000000>, <320000000>;
+				clocks = <&xtal>;
+			};
+
+			gop0: gop@246200 {
+				reg = <0x246200 0x400>;
+				interrupt-names = "gop";
+				//interrupts-extended = <&intc_irq GIC_SPI 50 IRQ_TYPE_LEVEL_HIGH>;
+				//clocks = <&clkgen_mux_gop 0>;
+				status = "disabled";
+			};
+
+			audiotop: syscon@206800 {
+				compatible = "syscon";
+				reg = <0x206800 0x200>;
+			};
+
+			bach: bach@2a0400 {
+				compatible = "mstar,msc313-bach";
+				reg = <0x2a0400 0x600>;
+				clocks = <&clkgen MSC313_CLKGEN_GATES 0 0>;
+				interrupt-parent = <&intc_irq>;
+				interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
+				interconnect-names = "dma-mem";
+				interconnects = <&miu 0>;
+				mstar,audiotop = <&audiotop>;
+			};
+		};
+
+		/* csi - camera interface */
+		csi: csi@1f240800 {
+			reg = <0x1f240800 0x200>;
+			interrupts-extended = <&intc_irq GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
+		};
+
+		/* pnl - RGB lcd driver? */
+		/* different address on m5? */
+
+#if 0
+		pnl: pnl@1f243400 {
+			compatible = "mstar,pnl";
+			reg = <0x1f243400 0x200>;
+			clock-names = "lpll";
+			clocks = <&lpll 0>;
+			status = "disabled";
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				pnl_in: port@0 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <0>;
+
+					pnl_in_gop0: endpoint@0 {
+						reg = <0>;
+						//remote-endpoint = <&gop0_out_pnl>;
+					};
+				};
+			};
+		};
+#endif
+
+		usbphy0: usb@0 {
+			#phy-cells = <1>;
+			compatible = "mstar,msc313-usb-phy";
+			clocks = <&xtal_div2>;
+			mstar,utmi = <&utmi0>;
+			mstar,usbc = <&usbc0>;
+			interrupts-extended = <&intc_irq GIC_SPI 30 IRQ_TYPE_LEVEL_HIGH>;
+			/*pinctrl-names = "default";
+			pinctrl-0 = <&usb_pins>;*/
+			status = "disabled";
+		};
+
+		utmi0: utmi@1f284200 {
+			compatible = "syscon";
+			reg = <0x1f284200 0x80>;
+		};
+
+		usbc0: usbc@1f284600 {
+			compatible = "syscon";
+			reg = <0x1f284600 0x20>;
+		};
+
+		uhc0: uhc@1f284800 {
+			compatible = "mstar,msc313-ehci";
+			reg = <0x1f284800 0x200>;
+			interrupts-extended = <&intc_irq GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
+			phys = <&usbphy0 0>;
+			phy-names = "usb";
+			mstar,usbc = <&usbc0>;
+			status = "disabled";
+		};
+
+		utmi1: utmi@1f285200 {
+			compatible = "syscon";
+			reg = <0x1f285200 0x80>;
+		};
+
+		usbc1: usbc@1f286200 {
+			compatible = "syscon";
+			reg = <0x1f286200 0x20>;
+		};
+
+		usbphy1: usbphy@1 {
+			#phy-cells = <1>;
+			compatible = "mstar,msc313-usb-phy";
+			clocks = <&xtal_div2>;
+			mstar,utmi = <&utmi1>;
+			mstar,usbc = <&usbc1>;
+			status = "disabled";
+		};
+
+		uhc1: uhc@1f286400 {
+			compatible = "mstar,msc313-ehci";
+			reg = <0x1f286400 0x200>;
+			interrupts-extended = <&intc_irq GIC_SPI 55 IRQ_TYPE_LEVEL_HIGH>;
+			phys = <&usbphy1 0>;
+			phy-names = "usb";
+			mstar,usbc = <&usbc1>;
+			status = "disabled";
+		};
+
+		imi: sram@a0000000 {
+			compatible = "mmio-sram";
+			reg = <0xa0000000 0x10000>;
+		};
+	};
+};

@@ -1,0 +1,6 @@
+config VIDEO_MSTAR_VIF
+	tristate "MStar VIF"
+	depends on VIDEO_V4L2 && COMMON_CLK && VIDEO_V4L2_SUBDEV_API && HAS_DMA
+	depends on ARCH_MSTAR || COMPILE_TEST
+	help
+	  xx

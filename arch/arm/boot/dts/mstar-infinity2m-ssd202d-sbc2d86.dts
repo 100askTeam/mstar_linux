@@ -1,0 +1,102 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * Copyright (c) 2021 thingy.jp.
+ * Author: Daniel Palmer <daniel@thingy.jp>
+ */
+
+/dts-v1/;
+#include "mstar-infinity2m-ssd202d-wirelesstag-ido-som2d01.dtsi"
+
+/ {
+	model = "SBC2D86 (SSD202D)";
+	compatible = "ido,sbc2d86", "mstar,infinity2m";
+
+	vcc_ext_vbus: regulator@2 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_ext_vbus";
+		regulator-type = "voltage";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpios = <&gpio SSD20XD_GPIO_GPIO11 0>;
+		enable-active-high;
+	};
+
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		pwms = <&pwm 0 50000>;
+		brightness-levels = <0 4 8 16 32 64 128 255>;
+		default-brightness-level = <6>;
+	};
+};
+
+&i2c0 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&i2c0_mode4_pins>;
+	status = "okay";
+	hym8563: rtc@10 {
+                compatible = "haoyu,hym8563";
+                reg = <0x10>;
+        };
+};
+
+&i2c1 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&i2c1_mode4_pins>;
+	status = "okay";
+        ts@5d {
+		compatible = "goodix,gt911";
+		reg = <0x5d>;
+		interrupts-extended = <&gpio SSD20XD_GPIO_TTL20 IRQ_TYPE_EDGE_FALLING>;
+		reset-gpios = <&gpio SSD20XD_GPIO_TTL21 GPIO_ACTIVE_HIGH>;
+		interrupt-gpios = <&gpio SSD20XD_GPIO_TTL20 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&pwm {
+	pinctrl-names = "default";
+        pinctrl-0 = <&pwm0_mode3_pins>;
+};
+
+&op2 {
+	status = "okay";
+	ports {
+		port@0 {
+			reg = <0>;
+			op2_out: endpoint {
+				remote-endpoint = <&dsi_in>;
+			};
+		};
+	};
+};
+
+&dsi {
+	status = "okay";
+	panel@0 {
+		compatible = "frida,frd720x720bk";
+		reg = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&tx_mipi_mode1_pins>;
+		backlight = <&backlight>;
+		dsi-lanes = <4>;
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
+
+	ports {
+		port@0 {
+			reg = <0>;
+			dsi_out: endpoint {
+				remote-endpoint = <&panel_in>;
+			};
+                };
+                port@1 {
+			reg = <1>;
+			dsi_in: endpoint {
+				remote-endpoint = <&op2_out>;
+			};
+		};
+        };
+};

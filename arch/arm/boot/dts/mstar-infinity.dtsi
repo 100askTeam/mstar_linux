@@ -1,0 +1,225 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * Copyright (c) 2020 thingy.jp.
+ * Author: Daniel Palmer <daniel@thingy.jp>
+ */
+
+#include "mstar-v7.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/gpio/mstar.h>
+#include <dt-bindings/gpio/msc313-gpio.h>
+#include <dt-bindings/clock/mstar-msc313-clkgen.h>
+#include <dt-bindings/clock/mstar-msc313-sc-gp.h>
+
+/ {
+	cpu0_opp_table: opp_table0 {
+		compatible = "operating-points-v2";
+		opp-shared;
+
+		opp-240000000 {
+			opp-hz = /bits/ 64 <240000000>;
+			opp-microvolt = <950000>;
+			clock-latency-ns = <300000>;
+		};
+
+		opp-400000000 {
+			opp-hz = /bits/ 64 <400000000>;
+			opp-microvolt = <950000>;
+			clock-latency-ns = <300000>;
+		};
+		opp-600000000 {
+			opp-hz = /bits/ 64 <600000000>;
+			opp-microvolt = <950000>;
+			clock-latency-ns = <300000>;
+		};
+
+		opp-800000000 {
+			opp-hz = /bits/ 64 <800000000>;
+			opp-microvolt = <1000000>;
+			clock-latency-ns = <300000>;
+		};
+	};
+};
+
+&soc {
+        did: did@0x1f007000 {
+			compatible = "mstar,msc313-did";
+			reg = <0x1f007000 0x8>;
+        };
+
+	mcm0: mcm@1f226000 {
+		compatible = "mstar,msc313-mcm";
+		reg = <0x1f226000 0x8>;
+	};
+
+	mcm1: mcm@1f226400 {
+		compatible = "mstar,msc313-mcm";
+		reg = <0x1f226400 0x8>;
+		/*1f226400 */
+		/*1f226404 */
+		/*1f226408 */
+	};
+
+	sramgates: gates@1f226640 {
+	};
+
+	mcm2: mcm@1f226800 {
+		compatible = "mstar,msc313-mcm";
+		reg = <0x1f226800 0xa8>;
+	};
+
+	pm_pwm: pwm@1f001da0 {
+		compatible = "mstar,msc313-pwm";
+		reg = <0x1f001da0 0xc>;
+		#pwm-cells = <2>;
+		clocks = <&xtal_div2>;
+		status = "disabled";
+	};
+
+	phyana: syscon@1f006200 {
+		/* albany ethernet phy
+	         * 0x1f006200
+		 * 0x1f006400
+		 * 0x1f006600
+		 */
+		compatible = "syscon";
+		reg = <0x1f006200 0x600>;
+	};
+
+	cmdq: cmdq@1f224000 {
+		reg = <0x1f224000 0x200>;
+		compatible = "mstar,msc313-cmdq";
+		interrupts-extended = <&intc_irq GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_MIU 0>;
+	};
+
+	/* jpe - jpeg encoder */
+	jpe: jpe@0x1f264000 {
+		reg = <0x1f264000 0x100>;
+		interrupts = <&intc_irq GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_JPE 0>;
+	};
+
+	/* mfe - video encoder*/
+	mfe: mfe@1f264800 {
+		reg = <0x1f264800 0x200>;
+		interrupts = <28 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	/* vhe - hevc encoder? English in comments is very good
+	 * so likely this is an IP block
+	 */
+	vhe: vhe@1f265000 {
+		reg = <0x1F265200 0x200>,
+		      <0x1F265000 0x100>;
+		interrupts = <21 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	emmc: emmc@1f280400 {
+		interrupts = <GIC_SPI 18 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	bc: bc@1f284400 {
+		/* 0x1f284400 - Called "BC" which seems to be battery charger */
+		reg = <0x1f284400 0x200>;
+	};
+
+	fakephy0: fakephy@0 {
+		compatible = "usb-nop-xceiv";
+		#phy-cells = <0>;
+	};
+
+	otg0: otg@1f284a00 {
+		compatible = "mstar,msc313-musb";
+		reg = <0x1f284a00 0x200>;
+		interrupt-names = "mc";
+		interrupts-extended = <&intc_irq GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
+		phys = <&fakephy0>;
+		mstar,usbc = <&usbc0>;
+		clock-names = "udc";
+		clocks = <&xtal_div2>;
+		status = "disabled";
+	};
+};
+
+&cpu0 {
+	operating-points-v2 = <&cpu0_opp_table>;
+};
+
+&imi {
+	reg = <0xa0000000 0x16000>;
+};
+
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart1_pins>;
+};
+
+&gpio {
+	compatible = "mstar,msc313-gpio";
+	gpio-ranges = <&pinctrl 0 36 22>,
+		      <&pinctrl 22 63 4>,
+		      <&pinctrl 26 68 6>;
+	status = "okay";
+};
+
+&sar {
+	compatible = "mstar,msc313e-sar";
+};
+
+&riu {
+	sdio: sdio@282000 {
+		compatible = "mstar,msc313-sdio";
+		interrupts-extended = <&intc_irq GIC_SPI 19 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_SDIO 0>;
+		reg = <0x282000 0x200>;
+		no-1-8-v;
+		cap-sd-highspeed;
+		bus-width = <4>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&sdio_pins>;
+		cd-gpios = <&gpio_pm 1 GPIO_ACTIVE_LOW>;
+		interconnects = <&miu 0>;
+		interconnect-names = "dma-mem";
+		status = "disabled";
+	};
+
+	emac: emac@2a2000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "mstar,msc313-emac";
+		interrupts-extended = <&intc_irq GIC_SPI 26 IRQ_TYPE_LEVEL_HIGH>;
+		reg = <0x2a2000 0x800>;
+		phy-mode = "mii";
+		clock-names = "pclk", "hclk", "tx_clk", "rx_clk";
+		clocks = <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_EMAC_AHB 0>,
+			 <&clkgen MSC313_CLKGEN_DEGLITCHES MSC313_CLKGEN_EMAC_AHB 0>,
+			 <&sc_gp_ctrl_muxes MSC313_SC_GP_EMAC_TX>,
+			 <&sc_gp_ctrl_muxes MSC313_SC_GP_EMAC_RX>;
+		assigned-clocks = <&sc_gp_ctrl_muxes MSC313_SC_GP_EMAC_RX_MUX>,
+				  <&sc_gp_ctrl_muxes MSC313_SC_GP_EMAC_TX_MUX>;
+		assigned-clock-parents = <&eth_buf>, <&eth_buf>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&emac_mode1_pins>;
+		local-mac-address = [00 00 00 00 00 00];
+		status = "disabled";
+		interconnects = <&miu 0>;
+		interconnect-names = "dma-mem";
+		phy-handle = <&phy>;
+		phy: phy@0 {
+			compatible = "ethernet-phy-idDEAD.BEEF";
+			phy-is-integrated;
+			reg = <0>;
+			mstar,pmsleep = <&pmsleep>;
+			mstar,phyana = <&phyana>;
+			interrupts-extended = <&intc_fiq GIC_SPI 21 IRQ_TYPE_LEVEL_HIGH>;
+		};
+	};
+};
+
+&sc_gp_ctrl_muxes {
+	compatible = "mstar,msc313-sc-gp-ctrl-muxes";
+	clock-names = "eth_buf", "rmii_buf";
+	clocks = <&eth_buf>, <&rmii_buf>;
+};

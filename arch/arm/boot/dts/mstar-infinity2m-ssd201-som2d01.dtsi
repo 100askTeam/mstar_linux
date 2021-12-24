@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+/*
+ * Copyright (c) 2021 thingy.jp.
+ * Author: Daniel Palmer <daniel@thingy.jp>
+ * Author: Romain Perier <romain.perier@gmail.com>
+ */
+
+/ {
+	reg_vcc_dram: regulator-vcc-dram {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_dram";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-boot-on;
+	};
+
+	vcc_core: regulator@0 {
+		compatible = "regulator-gpio";
+		regulator-name = "vcc_core";
+		regulator-type = "voltage";
+		regulator-min-microvolt = <950000>;
+		regulator-max-microvolt = <1000000>;
+		regulator-boot-on;
+		regulator-ramp-delay = <12000>;
+		gpios = <&sar 1 0>;
+		states = <1000000 0x1
+			  950000  0x0>;
+	};
+
+	vcc_dram: regulator@1 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_dram";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-boot-on;
+	};
+};
+
+&cpu0 {
+	cpu-supply = <&vcc_core>;
+};
+
+&pm_uart {
+	status = "okay";
+};
+
+&isp {
+	status = "okay";
+	nand: nand@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-nand";
+		reg = <0>;
+		spi-max-frequency = <40000000>;
+		spi-rx-bus-width = <4>;
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ubi@2c0000-0x000008000000 {
+				label = "ubi";
+				reg = <0x2c0000 0x7d40000>;
+			};
+		};
+	};
+};
+
+&usbphy0 {
+	status = "okay";
+};
+
+&uhc0 {
+	status = "okay";
+};
+
+&emac {
+	status = "okay";
+};
+
+&miu {
+	ddr-supply = <&vcc_dram>;
+};

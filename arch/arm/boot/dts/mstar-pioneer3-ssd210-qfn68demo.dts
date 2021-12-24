@@ -1,0 +1,114 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (c) 2019 thingy.jp.
+ * Author: Daniel Palmer <daniel@thingy.jp>
+ */
+
+/dts-v1/;
+#include "mstar-pioneer3-ssd210.dtsi"
+
+#include <dt-bindings/gpio/ssd210-gpio.h>
+
+/ {
+	model = "QFN68 DEMO";
+	compatible = "sstar,qfn68demo", "sstar,pioneer3";
+
+	aliases {
+		serial0 = &pm_uart;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		bootargs = "console=ttyS0,115200 clk_ignore_unused earlyprintk ubi.mtd=1 ubi.block=0,rootfs root=/dev/ubiblock0_0 rootwait";
+	};
+
+	vcc_core: regulator-vcc-core {
+		compatible = "regulator-gpio";
+		regulator-name = "vcc_core";
+		regulator-type = "voltage";
+		regulator-min-microvolt = <900000>;
+		regulator-max-microvolt = <1000000>;
+		regulator-boot-on;
+		gpios = <&sar 1 0>;
+		states = <1000000 0x1
+			  900000  0x0>;
+	};
+
+	vcc_dram: regulator-vcc-dram {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_dram";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-boot-on;
+	};
+
+/* not present on all versions?
+	3v3_ext: regulator-3v3-ext {
+		compatible = "regulator-fixed";
+		regulator-name = "3v3_ext";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpios = <&gpio SSD210_GPIO_SR_IO10 0>;
+	};
+*/
+
+	vcc_sd: regulator-vcc-sd {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_sd";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpios = <&gpio SSD210_GPIO_TTL7 0>;
+	};
+};
+
+&cpu0 {
+	cpu-supply = <&vcc_core>;
+};
+
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c0_mode4_pins>;
+	status = "okay";
+};
+
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_mode1_pins>;
+	status = "okay";
+};
+
+&pm_uart {
+	status = "okay";
+};
+
+&miu {
+	ddr-supply = <&vcc_dram>;
+};
+
+&isp {
+	status = "okay";
+	nand@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-nand";
+		reg = <0>;
+		spi-max-frequency = <40000000>;
+		spi-rx-bus-width = <4>;
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			rescue@1000000 {
+				label = "ubi";
+				reg = <0x1000000 0x7000000>;
+			};
+		};
+	};
+};
+
+&sdio {
+	vmmc-supply = <&vcc_sd>;
+	vqmmc-supply = <&vcc_sd>;
+	cd-gpios = <&gpio SSD210_GPIO_TTL0 GPIO_ACTIVE_LOW>;
+	status = "disabled";
+};

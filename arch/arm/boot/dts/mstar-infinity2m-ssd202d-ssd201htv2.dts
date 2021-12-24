@@ -1,0 +1,118 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * Copyright (c) 2020 thingy.jp.
+ * Author: Daniel Palmer <daniel@thingy.jp>
+ */
+
+/dts-v1/;
+#include "mstar-infinity2m-ssd202d.dtsi"
+
+/ {
+	model = "SSD201_HT_V2";
+	compatible = "honestar,ssd201htv2", "mstar,infinity2m";
+
+	aliases {
+		serial0 = &pm_uart;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		bootargs = "console=ttyS0,115200 clk_ignore_unused earlyprintk";
+	};
+
+	vcc_dram: fixedregulator@1 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_dram";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-boot-on;
+	};
+
+	sd_vdd: fixedregulator@0 {
+		compatible = "regulator-fixed";
+		regulator-name = "sd_vdd";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&gpio SSD20XD_GPIO_GPIO0 0>;
+	};
+};
+
+&pm_uart {
+	status = "okay";
+};
+
+&i2c0 {
+	/delete-property/ pinctrl-names;
+	/delete-property/ pinctrl-0;
+	status = "okay";
+};
+
+&i2c1 {
+	pinctrl-0 = <&i2c1_mode1_pins>;
+	status = "okay";
+	ts@5d {
+		compatible = "goodix,gt911";
+		reg = <0x5d>;
+		reset-gpios = <&gpio SSD20XD_GPIO_GPIO1 0>;
+		irq-gpios = <&gpio SSD20XD_GPIO_GPIO13 0>;
+	};
+};
+
+&isp {
+	status = "okay";
+	nand: nand@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-nand";
+		reg = <0>;
+		spi-max-frequency = <40000000>;
+	};
+};
+
+&emac {
+	status = "okay";
+};
+
+&emac1 {
+	//status = "okay";
+	phy-mode = "rmii";
+	phy-handle = <&phy0>;
+
+
+	#address-cells = <1>;
+	#size-cells = <0>;
+	phy0: ethernet-phy@0 {
+		reg = <0x0>;
+		phy-mode = "rmii";
+	};
+};
+
+&usbphy0 {
+	status = "okay";
+};
+
+&uhc0 {
+	status = "okay";
+};
+
+&usbphy2 {
+	status = "okay";
+};
+
+&uhc2 {
+	status = "okay";
+};
+
+&sdio {
+	vmmc-supply = <&sd_vdd>;
+	status = "okay";
+};
+
+&miu {
+	ddr-supply = <&vcc_dram>;
+};
+
+//&pnl {
+//	pinctrl-names = "default";
+//	pinctrl-0 = <&ttl_mode1_pins>;
+//};
